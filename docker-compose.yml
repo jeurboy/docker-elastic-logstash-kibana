@@ -1,0 +1,58 @@
+version: "3.0"
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:5.4.2
+    # NOTE: the default vm.max_map_count maynot be enough to 
+    #       run elasticsearch increase it to at least  262144
+    # sudo sysctl vm.max_map_count=262144
+    # volumes:
+    #   - esdata:/usr/share/elasticsearch/data
+    networks:
+     - logging
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+    ports:
+      - "9200:9200"
+    container_name:
+      elasticsearch
+      
+  kibana:
+    image: kibana:5.4.2
+    environment:
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+    volumes:
+      - ./kibana-cfg:/etc/kibana
+    networks:
+      - logging
+    ports:
+      - "5601:5601"
+    links:
+      - "elasticsearch:elasticsearch"
+
+  logstash:
+    image: logstash:5.4.2
+    # NOTE: logstash isn't updating ES with command, might be an entry script bug
+    # command: -f /config-dir/apache.conf --log.level debug --config.debug
+    # entrypoint: logstash -f /etc/logstash/conf.d/logstash.conf
+    volumes:
+      - ${PWD}/logstash/config/:/config-dir/
+      - ${PWD}/logstash/data-dir/:/data-dir/
+    entrypoint: logstash -f /config-dir/
+    networks:
+      - logging
+    deploy:
+      mode: global
+    ports:
+      - "4560:4560/udp"
+    links:
+      - "elasticsearch:elasticsearch"
+
+networks:
+  logging:
+    driver: bridge
+
+volumes:
+  esdata:
