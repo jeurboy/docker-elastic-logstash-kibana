@@ -20,7 +20,7 @@ services:
       elasticsearch
       
   kibana:
-    image: kibana:5.4.2
+    image: docker.elastic.co/kibana/kibana:5.4.2
     environment:
       - ELASTICSEARCH_URL=http://elasticsearch:9200
     volumes:
@@ -31,9 +31,12 @@ services:
       - "5601:5601"
     links:
       - "elasticsearch:elasticsearch"
+    container_name:
+      kibana
+      
 
   logstash:
-    image: logstash:5.4.2
+    image: docker.elastic.co/logstash/logstash:5.4.2
     # NOTE: logstash isn't updating ES with command, might be an entry script bug
     # command: -f /config-dir/apache.conf --log.level debug --config.debug
     # entrypoint: logstash -f /etc/logstash/conf.d/logstash.conf
@@ -49,7 +52,8 @@ services:
       - "4560:4560/udp"
     links:
       - "elasticsearch:elasticsearch"
-
+    container_name:
+      logstash
 networks:
   logging:
     driver: bridge
