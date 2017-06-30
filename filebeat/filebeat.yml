@@ -2,7 +2,6 @@ filebeat.prospectors:
 - input_type: log
   json.keys_under_root: true
   json.add_error_key: true
-  json.message_key: log
   paths:
     - "/data-dir/*.log"
   document_type: log
